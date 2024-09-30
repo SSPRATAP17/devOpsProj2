@@ -1,0 +1,67 @@
+pipeline{
+    agent any
+    tools{
+        jdk 'JDK 8'
+        gradle 'My Gradle'
+    }
+    stages{
+        stage('Delete Workspace'){
+            steps{
+                deleteDir()
+            }              
+        }
+        stage('Gradle Build'){
+            steps{
+                git 'https://github.com/SSPRATAP17/devOpsProj2.git'
+                withGradle{
+                    sh './gradlew build'
+                }
+            }
+        }
+        stage("Build Docker Image"){
+            steps{
+                script{
+                    dockerImage = docker.build("satyasiva/projectcapstone:devops2" )
+                    // format for this is docker.build(<imagename +:<tagname>, path of dockerfile )
+                }
+            }
+        }
+        stage("Push Docker Image"){
+            steps{
+                script{
+                    docker.withRegistry("","dockerhub_id"){
+                    // format for this is docker.withRegistry(<registry url>, <registry credentials>)
+                        dockerImage.push("$BUILD_NUMBER")
+                        dockerImage.push("latest")
+                    // format for this is <variable storing details of image>.push(<tag>)
+                    }
+                }
+            }
+        }
+        stage("Deploy to kubernetes cluster"){
+            steps{
+                sshPublisher(publishers: [sshPublisherDesc(configName: 'Kubemaster', transfers: [
+                    sshTransfer(
+                        cleanRemote: false, 
+                        excludes: '', 
+                        execCommand: '''
+                            cd project-deployment
+                            kubectl delete -f deployment.yaml
+                            kubectl apply -f deployment.yaml
+                        ''', 
+                        execTimeout: 120000, 
+                        flatten: false, 
+                        makeEmptyDirs: false, 
+                        noDefaultExcludes: false, 
+                        patternSeparator: '[, ]+', 
+                        remoteDirectory: 'project-deployment', 
+                        remoteDirectorySDF: false, 
+                        removePrefix: '', 
+                        sourceFiles: 'deployment.yaml')], 
+                        usePromotionTimestamp: false, 
+                        useWorkspaceInPromotion: false, 
+                        verbose: false)])
+            }
+        }
+    }
+}
