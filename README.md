@@ -1,4 +1,4 @@
-# Edureka Devops Certification Project 2
+# Devops Certification Project 2
 
 ## Problem Statement 
 
@@ -10,6 +10,3 @@ A retail company Abstergo Corp.has recently setup an online shopping portal(webs
 - The automated builds will frequently deploy new features to the production website.
 - Every build will prepare a Dockerfile and push docker images to docker-hub.
 - Every docker image will be deployed (Continuous Deployment) to a kubernetes-cluster
-
-#### Forked Repository for Project 
-This Project is based on a sample project repository forked from [Edureka's Devops Certification Sample Repo](https://github.com/bhavukm/cicd-pipeline-train-schedule-autodeploy)
